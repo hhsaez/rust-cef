@@ -3,14 +3,14 @@ use std::path::Path;
 
 enum Platform {
     Windows,
-    // Mac, // TODO - enable once mac has been tested
+    Mac, // TODO - enable once mac has been tested
     Linux,
 }
 
 fn get_platform() -> Platform {
     match std::env::var("TARGET").unwrap().split('-').nth(2).unwrap() {
         "win32" | "windows" => Platform::Windows,
-        // "darwin" => Platform::Mac,
+        "darwin" => Platform::Mac,
         "linux" => Platform::Linux,
         other => panic!("Sorry, platform \"{}\" is not supported by CEF.", other),
     }
@@ -31,13 +31,24 @@ fn main() {
     // Inform rust what to link
     match get_platform() {
         Platform::Windows => println!("cargo:rustc-link-lib=libcef"),
+        Platform::Mac => {
+            println!("cargo:rustc-link-lib=framework=\"Chromium Embedded Framework\"")
+        }
         Platform::Linux => println!("cargo:rustc-link-lib=cef"),
     };
 
     println!("Path: {:?}", source_dir);
 
-    let release_dir = Path::new(&source_dir).join("Release");
-    let resources_dir = Path::new(&source_dir).join("Resources");
+    let release_dir = match get_platform() {
+        Platform::Mac => Path::new(&source_dir)
+            .join("Release")
+            .join("Chromium Embedded Framework.framework"),
+        _ => Path::new(&source_dir).join("Release"),
+    };
+    let resources_dir = match get_platform() {
+        Platform::Mac => Path::new(&release_dir).join("Resources"),
+        _ => Path::new(&source_dir).join("Release"),
+    };
 
     if !release_dir.exists() {
         panic!(
@@ -54,6 +65,7 @@ fn main() {
 
     if let Some(release_dir) = release_dir.to_str() {
         println!("cargo:rustc-link-search=native={}", release_dir);
+        println!("cargo:rustc-link-search=framework={}", release_dir);
     }
 
     // Copy the required Resources & Release contents to OUT_DIR so that a cargo run works
@@ -65,6 +77,7 @@ fn main() {
         buffer_size: 64000, // Default
         copy_inside: true,
         depth: 0,
+        content_only: false,
     };
 
     let mut release_items = fs_extra::dir::get_dir_content(&release_dir).unwrap();

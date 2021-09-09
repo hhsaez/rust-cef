@@ -2,5 +2,6 @@
 
 members = [
  "cef-sys",
- "cef"
+ "cef",
+ "cef/examples/demo"
 ]
