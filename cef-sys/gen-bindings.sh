@@ -2,8 +2,8 @@
 
 unameOut="$(uname -s)"
 case "${unameOut}" in
-    Linux*)     outfile=src/bindings.rs;;
-#    Darwin*)    machine=Mac;;
+    Linux*)     outfile=src/bindings_linux.rs;;
+    Darwin*)    outfile=src/bindings_mac.rs;;
     CYGWIN*)    outfile=src/bindings_msvc.rs;;
     MINGW*)     outfile=src/bindings_msvc.rs;;
     *)          echo "Unknown platform"; exit 1

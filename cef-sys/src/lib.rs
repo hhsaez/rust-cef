@@ -1,5 +1,3 @@
-// #![feature(non_exhaustive)]
-
 #[allow(
     non_snake_case,
     non_camel_case_types,
@@ -7,12 +5,12 @@
     dead_code,
     clippy::all
 )]
-#[cfg(not(target_os = "windows"))]
+#[cfg(target_os = "linux")]
 #[link(name = "cef", kind = "dynamic")]
-mod bindings;
+mod bindings_linux;
 
-#[cfg(not(target_os = "windows"))]
-pub use bindings::*;
+#[cfg(target_os = "linux")]
+pub use bindings_linux::*;
 
 #[allow(
     non_snake_case,
