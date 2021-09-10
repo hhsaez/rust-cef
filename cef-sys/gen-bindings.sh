@@ -9,6 +9,9 @@ case "${unameOut}" in
     *)          echo "Unknown platform"; exit 1
 esac
 
+# TODO(JP): Move this to a dependency in Cargo.toml, and maybe also move this script into build.rs.
+cargo install --version 0.50.0 bindgen
+
 echo "Generating to: ${outfile}"
 
 bindgen wrapper.h -o $outfile \
