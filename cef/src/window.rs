@@ -12,7 +12,18 @@ mod platform {
     }
 }
 
-#[cfg(not(target_os = "windows"))]
+#[cfg(target_os = "macos")]
+mod platform {
+    use std::ptr::null_mut;
+
+    pub type WindowHandle = *mut ::std::os::raw::c_void;
+
+    pub(crate) fn window_handle_default() -> WindowHandle {
+        null_mut()
+    }
+}
+
+#[cfg(target_os = "linux")]
 mod platform {
     pub type WindowHandle = u64;
 

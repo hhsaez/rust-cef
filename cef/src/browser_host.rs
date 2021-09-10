@@ -1,6 +1,6 @@
 use crate::ptr::RefCounterGuard;
 use crate::types::string::CefString;
-use crate::{Browser, CefWindowHandle, Frame, PaintElementType};
+use crate::{Browser, CefWindowHandle, Frame, PaintElementType, window_handle_default};
 use cef_sys::{
     cef_browser_host_t, cef_browser_settings_t, cef_client_t, cef_composition_underline_t,
     cef_download_image_callback_t, cef_drag_data_t, cef_drag_operations_mask_t, cef_extension_t,
@@ -58,7 +58,7 @@ impl BrowserHost {
         if let Some(func) = self.ptr.as_ref().get_window_handle {
             unsafe { func(self.ptr.get()) }
         } else {
-            CefWindowHandle::default()
+            window_handle_default()
         }
     }
 
@@ -66,7 +66,7 @@ impl BrowserHost {
         if let Some(func) = self.ptr.as_ref().get_opener_window_handle {
             unsafe { func(self.ptr.get()) }
         } else {
-            CefWindowHandle::default()
+            window_handle_default()
         }
     }
 
