@@ -32,7 +32,7 @@ fn main() {
     match get_platform() {
         Platform::Windows => println!("cargo:rustc-link-lib=libcef"),
         Platform::Mac => {
-            println!("cargo:rustc-link-lib=framework=\"Chromium Embedded Framework\"")
+            println!("cargo:rustc-link-lib=framework=Chromium Embedded Framework")
         }
         Platform::Linux => println!("cargo:rustc-link-lib=cef"),
     };
@@ -40,13 +40,7 @@ fn main() {
     println!("Path: {:?}", source_dir);
 
     let release_dir = match get_platform() {
-        Platform::Mac => Path::new(&source_dir)
-            .join("Release")
-            .join("Chromium Embedded Framework.framework"),
-        _ => Path::new(&source_dir).join("Release"),
-    };
-    let resources_dir = match get_platform() {
-        Platform::Mac => Path::new(&release_dir).join("Resources"),
+        Platform::Mac => Path::new(&source_dir).join("Release"),
         _ => Path::new(&source_dir).join("Release"),
     };
 
@@ -56,20 +50,6 @@ fn main() {
             release_dir.to_str().unwrap_or_else(|| "")
         );
     }
-    if !resources_dir.exists() {
-        panic!(
-            "CEF Resources directory ({}) does not exist",
-            resources_dir.to_str().unwrap_or_else(|| "")
-        );
-    }
-
-    if let Some(release_dir) = release_dir.to_str() {
-        println!("cargo:rustc-link-search=native={}", release_dir);
-        println!("cargo:rustc-link-search=framework={}", release_dir);
-    }
-
-    // Copy the required Resources & Release contents to OUT_DIR so that a cargo run works
-    let dest_path = Path::new(&env::var("OUT_DIR").unwrap()).join("../../..");
 
     let opts = fs_extra::dir::CopyOptions {
         overwrite: true,
@@ -80,14 +60,42 @@ fn main() {
         content_only: false,
     };
 
-    let mut release_items = fs_extra::dir::get_dir_content(&release_dir).unwrap();
-    let mut resources_items = fs_extra::dir::get_dir_content(&resources_dir).unwrap();
+    if let Platform::Mac = get_platform() {
+        if let Some(release_dir) = release_dir.to_str() {
+            println!("cargo:rustc-link-search=framework={}", release_dir);
+        }
+        let dest_path = Path::new(&env::var("OUT_DIR").unwrap()).join("../../../../Frameworks");
 
-    let mut all_items = Vec::new();
-    all_items.append(&mut release_items.directories);
-    all_items.append(&mut release_items.files);
-    all_items.append(&mut resources_items.directories);
-    all_items.append(&mut resources_items.files);
+        let all_items = vec![release_dir.to_str().unwrap()];
 
-    fs_extra::copy_items(&all_items, &dest_path, &opts).unwrap();
+        fs_extra::copy_items(&all_items, &dest_path, &opts).unwrap();
+    } else {
+        if let Some(release_dir) = release_dir.to_str() {
+            println!("cargo:rustc-link-search=native={}", release_dir);
+        }
+
+        let resources_dir = match get_platform() {
+            _ => Path::new(&source_dir).join("Release"),
+        };
+        if !resources_dir.exists() {
+            panic!(
+                "CEF Resources directory ({}) does not exist",
+                resources_dir.to_str().unwrap_or_else(|| "")
+            );
+        }
+
+        // Copy the required Resources & Release contents to OUT_DIR so that a cargo run works
+        let dest_path = Path::new(&env::var("OUT_DIR").unwrap()).join("../../..");
+
+        let mut release_items = fs_extra::dir::get_dir_content(&release_dir).unwrap();
+        let mut resources_items = fs_extra::dir::get_dir_content(&resources_dir).unwrap();
+
+        let mut all_items = Vec::new();
+        all_items.append(&mut release_items.directories);
+        all_items.append(&mut release_items.files);
+        all_items.append(&mut resources_items.directories);
+        all_items.append(&mut resources_items.files);
+
+        fs_extra::copy_items(&all_items, &dest_path, &opts).unwrap();
+    }
 }
