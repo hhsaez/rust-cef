@@ -21,10 +21,10 @@ pub use bindings_linux::*;
 )]
 #[cfg(target_os = "macos")]
 #[link(name = "cef", kind = "dynamic")]
-mod bindings_mac;
+mod bindings_macos;
 
 #[cfg(target_os = "macos")]
-pub use bindings_mac::*;
+pub use bindings_macos::*;
 
 #[allow(
     non_snake_case,
