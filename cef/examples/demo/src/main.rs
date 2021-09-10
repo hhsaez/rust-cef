@@ -69,7 +69,11 @@ fn main() {
     // settings.log_severity = cef_log_severity_t_LOGSEVERITY_VERBOSE;
     settings.remote_debugging_port = Some(9876);
     settings.windowless_rendering_enabled = true;
-    settings.multi_threaded_message_loop = true;
+    // settings.multi_threaded_message_loop = true;
+    settings.framework_dir_path = Some("/Users/jp.posma/rust-cef/target/Frameworks/Chromium Embedded Framework.framework");
+
+
+    println!("before init");
 
     cef::initialize(settings, &app);
 
@@ -79,14 +83,14 @@ fn main() {
     //    std::thread::sleep(Duration::from_secs(2));
 
     //        let client2 = client.clone();
-    cef::post_task(cef::ThreadId::TID_UI, move || {
+    // cef::post_task(cef::ThreadId::TID_UI, move || {
         let mut window_info = WindowInfo::default();
         window_info.width = 1280;
         window_info.height = 720;
-        window_info.windowless_rendering_enabled = true;
+        // window_info.windowless_rendering_enabled = true;
 
         let mut browser_settings = BrowserSettings::default();
-        browser_settings.windowless_frame_rate = 30; // TODO - not necessary here?
+        // browser_settings.windowless_frame_rate = 30; // TODO - not necessary here?
 
         let client = Arc::new(MyClient {
             render_handler: Arc::new(MyRenderHandler {}),
@@ -94,20 +98,20 @@ fn main() {
 
         // Open a window
         create_browser_sync(window_info, &client, "http://google.com", browser_settings);
-    })
-    .unwrap();
+    // })
+    // .unwrap();
 
-    println!("waiting");
-    std::thread::sleep(Duration::from_secs(600));
+    // println!("waiting");
+    // std::thread::sleep(Duration::from_secs(600));
 
-    println!("quit");
-    cef::quit_message_loop();
-    // TODO - this doesnt appear to be stopping the loop..
-    //    });
+    // println!("quit");
+    // cef::quit_message_loop();
+    // // TODO - this doesnt appear to be stopping the loop..
+    // //    });
 
-    //    cef::run_message_loop();
+    cef::run_message_loop();
 
-    println!("shutting fown");
+    // println!("shutting fown");
 
     cef::shutdown();
 }
